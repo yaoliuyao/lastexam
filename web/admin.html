@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>杯具管理系统</title>
+    <script src="assets/vue.js"></script>
+    <script src="assets/axios.js"></script>
+    <link rel="stylesheet" href="assets/bootstrap.css">
+    <style>
+        #app {
+            width: 600px;
+            margin: 30px auto;
+        }
+        .btn-wrap {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div>
+            <h3>杯具管理系统</h3>
+        </div>
+        <div>
+            <table class="table">
+                <tr>
+                    <th><input type="checkbox" v-on:change="checkReverse"></th>
+                    <th>编号</th>
+                    <th>名字</th>
+                    <th>价格</th>
+                    <th>出厂日期</th>
+                    <th>操作</th>
+                </tr>
+                <tr v-for="cup in cups" :key="cup.id">
+                    <td><input type="checkbox" v-model="cup.checked"></td>
+                    <td>{{cup.id}}</td>
+                    <td>{{cup.name}}</td>
+                    <td>{{cup.price}}</td>
+                    <td>{{cup.birth}}</td>
+                    <td><a href="#" v-on:click="deleteCup(cup.id)">删除</a></td>
+                </tr>
+            </table>
+            <div v-if="cups.length === 0">没有任何数据!</div>
+        </div>
+        <div class="btn-wrap">
+            <div>
+                <button class="btn btn-primary" v-on:click="checkAll">选中所有</button>
+                <button class="btn btn-primary" v-on:click="uncheckAll">取消选择</button>
+            </div>
+            <div>
+                <button class="btn btn-primary" v-on:click="deleteCups">删除选中</button>
+                <button class="btn btn-primary">其他</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                cups: []
+            },
+            methods: {
+                loadCups() {
+                    axios({
+                        method: 'get',
+                        url: 'getAll'
+                    }).then((r) => {
+                        this.cups = r.data.data.map(c => {
+                            c.checked = false;
+                            return c;
+                        });
+                    });
+                },
+                deleteCup(id) {
+                    if (!confirm('是不是要删除'))
+                        return;
+                    axios({
+                        method: 'get',
+                        url: 'delete?id=' + id
+                    }).then(() => {
+                        alert('删除成功!');
+                        this.loadCups();
+                    }).catch(() => {
+                        alert('删除失败');
+                    });
+                },
+                deleteCups() {
+                    let ids = this.cups.filter(c => c.checked === true).map(c => c.id).join(',');
+
+                    if (!ids) {
+                        alert("请必须选择一定条目");
+                        return;
+                    }
+                    if (!confirm('是不是要删除'))
+                        return;
+                    axios({
+                        method: 'get',
+                        url: 'deleteall?ids=' + ids
+                    }).then(() => {
+                        alert('删除成功!');
+                        this.loadCups();
+                    }).catch(() => {
+                        alert('删除失败');
+                    });
+
+                    // 1. 循环调用 this.deleteCup(idN); // 优点: 简单 缺点: 不事务安全
+                    // 2. axios(url: deletesome?ids=1,2,3,4 // 优点: 事务安全 缺点: 麻烦
+                    // 3. axios(url: deletesome?id=1&id=2&id=3&id=4
+                    // 4. axios(url: deletesome [1,2,3,4] req.getInputStream() new Gson().fromJson()
+                },
+                clickCheck(id) {
+                    this.cups.forEach((cup) => {
+                        if (cup.id === id) {
+                            cup.checked = !cup.checked;
+                        }
+                    });
+                    console.log(this.cups);
+                },
+                checkAll() {
+                    this.cups.forEach(cup => cup.checked = true);
+                },
+                uncheckAll() {
+                    this.cups.forEach(cup => cup.checked = false);
+                },
+                checkReverse () {
+                    this.cups.forEach(cup => cup.checked = !cup.checked);
+                }
+            },
+            mounted() {
+                this.loadCups();
+            }
+        })
+    </script>
+</body>
+</html>
