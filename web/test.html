@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Document</title>
+    <script src="assets/axios.js"></script>
+  </head>
+  <body>
+
+    我是一个来自外部的页面。我要僭越了。
+
+    <script>
+     function loadCups() {
+       axios({
+         method: 'get',
+         url: 'http://localhost:9999/mycup_war_exploded/getAll',
+         withCredentials: true
+       }).then((r) => {
+         alert("成功啦");
+       }).catch(r => {
+         console.error(r);
+       });
+     }
+     /* function loadScript() {
+      *   var s = document.createElement("script");
+      *   s.src = 'http://localhost:9999/mycup_war_exploded/getAll_script?callback=loadCups';
+      *   document.body.appendChild(s); // loadCups({ name: 222, age: 333})
+      * }
+      * function loadCups(data) {
+      *   alert(data);
+      * } */
+
+     loadCups();
+    </script>
+
+  </body>
+</html>
